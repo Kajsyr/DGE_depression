@@ -1,0 +1,211 @@
+---
+title: "DGE Projekt"
+output: html_document
+date: "2026-01-08"
+---
+
+
+```{r}
+#Load Package
+library(DESeq2)
+library(dplyr)
+library(GEOquery)
+library(tidyverse)
+library(ggplot2)
+
+```
+
+## Dowload, filter and prepare data
+```{bash}
+#Metadate
+wget -P=/data https://ftp.ncbi.nlm.nih.gov/geo/series/GSE260nnn/GSE260603/matrix/GSE260603_series_matrix.txt.gz
+#Rawcounts for analyzis
+wget -P=/data https://ftp.ncbi.nlm.nih.gov/geo/series/GSE260nnn/GSE260603/suppl/GSE260603%5Fraw%5Fcounts.tsv.gz
+```
+
+
+```{bash}
+
+```
+
+```{bash}
+ls
+```
+
+# FIlter and
+
+```{r}
+gse <- getGEO(filename="./GSE260603_series_matrix.txt.gz")
+```
+
+
+
+```{r}
+#TEn kod tu nie jest potrzbny bo pobieramy wget ale zosawię jak by nie dizałało
+# Dowload data 
+gse <- getGEO("GSE260603", GSEMatrix = TRUE)[[1]]
+```
+
+```{r}
+#Write metadata and inspect
+metadata <- pData(gse)
+colnames(metadata)
+
+```
+
+```{r}
+#Rename and filter
+metadata <- metadata %>%
+  rename(
+    gender = `Sex:ch1`,
+    afected = `characteristics_ch1.4`
+  )
+
+#Subset
+metadata<-metadata[, c('title','gender', 'afected')]
+
+#Filter only men
+metadata_filt <-metadata  %>% filter(gender == "male")
+
+#New colname
+rownames(metadata_filt) <- metadata_filt$title
+metadata_filt
+```
+
+```{bash}
+ls
+```
+
+
+```{r}
+#Get cout matrix
+counts <- data.table::fread("GSE260603_raw_counts.tsv.gz")
+
+gene_ids <- counts[[1]]
+count_matrix <- as.matrix(counts[, -1])
+rownames(count_matrix) <- gene_ids
+
+```
+
+```{r}
+#Include same sample to analysisis
+common_samples <- intersect(
+  colnames(count_matrix),
+  rownames(metadata_filt)
+)
+
+count_matrix <- count_matrix[, common_samples]
+metadata_filt <- metadata_filt[common_samples, ]
+
+metadata_filt <- metadata_filt[colnames(count_matrix), ]
+
+all(colnames(count_matrix) == rownames(metadata_filt))
+
+```
+
+## Use DESeq2
+```{r}
+#Perform DGE
+dds <- DESeqDataSetFromMatrix(
+  countData = count_matrix,
+  colData = metadata,
+  design = ~ characteristics_ch1.4
+)
+
+dds <- dds[rowSums(counts(dds)) > 10, ]
+dds <- DESeq(dds)
+
+res <- results(dds)
+
+```
+
+```{r}
+dds
+```
+
+```{r}
+head(res)
+```
+
+```{r}
+plotDispEsts(dds)
+```
+
+
+```{r}
+#Normalise
+norm_counts <- DESeq2::counts(dds, normalized = T)
+```
+
+
+## Volcano Plot
+
+```{r}
+# Data preperation
+res_df <- as.data.frame(res)
+res_df$gene <- rownames(res_df)
+
+plot(
+  res_df$log2FoldChange,
+  -log10(res_df$padj),
+  pch = 16,
+  col = ifelse(res_df$padj < 0.01 & abs(res_df$log2FoldChange) > 2, "red", "grey"),
+  xlab = "log2 fold change",
+  ylab = "-log10 adjusted p-value",
+  main = "Volcano plot "
+)
+
+```
+
+
+#PCA
+```{r}
+to_PCA <- norm_counts %>% t() # transpose a table (rows become columns)
+pca <- prcomp(to_PCA) #run PCA (the result is a list)
+```
+
+```{r}
+variance_explained <- pca$sdev^2 # squared standard deviation for each PC axis (first PC always explains the most of variance)
+percentage_variance_explained <- variance_explained/sum(variance_explained)*100 #calculate percent of variance explained for each PC axis
+percentage_variance_explained <- round(percentage_variance_explained,2) # round it to two decimal places
+```
+
+```{r}
+pca_plot <- #table used for plotting
+  as.data.frame(pca$x) %>% # extract the "x" object from the "pca" list and convert it to a data.frame object - it consists of coordinates of each sample on all PC axes
+  tibble::rownames_to_column(var ="title") %>% # create a new column called "SAMPLE" out of row names (sample ids)
+  left_join(metadata_filt, by = "title") #combine our table with metadata - the rows will be combined based on value in the "SAMPLE" columns
+```
+
+
+
+```{r}
+
+ggplot(pca_plot)+
+  geom_point(mapping = aes(x = PC1,y = PC2,col = smoking_status),size = 3)+
+  labs(x = percentage_variance_explained[1],y = percentage_variance_explained[2])
+```
+I perform PCA like in class. No significant result.
+SO i try diffrent method. It gave diffrent results.
+```{r}
+vsd <- vst(dds)
+pcaData <- plotPCA(vsd, intgroup = "smoking_status", returnData = TRUE)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+
+ggplot(pcaData, aes(PC1, PC2, color = smoking_status)) +
+  geom_point(size = 4) +
+  xlab(paste0(percentVar[1])) +
+  ylab(paste0(percentVar[2])) +
+  theme_minimal() +
+  ggtitle("PCA ")
+
+```
+In this 
+```{r}
+#Filter down genes
+down_genes <- res_df %>%
+  filter(padj < 0.01 & (log2FoldChange < -2 | log2FoldChange > 2))
+down_genes
+```
+
+
