@@ -1,0 +1,251 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
+
+```{r}
+library(dplyr)
+library(readr)
+library(ggplot2)
+setwd("~/Desktop/HTS_project")
+data <- read_tsv("GSE260603_normalized_data.tsv")
+```
+
+# PCA
+
+```{r}
+# expression matrix
+expr <- data %>%
+  as.data.frame()
+
+rownames(expr) <- expr$Geneid
+expr$Geneid <- NULL
+
+expr <- as.matrix(expr)
+storage.mode(expr) <- "numeric"
+pca <- prcomp(t(expr), center = TRUE, scale. = TRUE)
+
+# variance explained
+var_explained <- (pca$sdev^2 / sum(pca$sdev^2)) * 100
+
+# data frame
+pca_df <- as.data.frame(pca$x) %>%
+  mutate(sample = rownames(.))
+
+# 5 PC1 vs PC2)
+ggplot(pca_df, aes(x = PC1, y = PC2)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(
+    title = "PCA (normalized expression)",
+    subtitle = paste0(
+      "PC1: ", round(var_explained[1], 1), "% | ",
+      "PC2: ", round(var_explained[2], 1), "%"
+    ),
+    x = paste0("PC1 (", round(var_explained[1], 1), "%)"),
+    y = paste0("PC2 (", round(var_explained[2], 1), "%)")
+  ) +
+  theme_minimal(base_size = 14)
+
+```
+
+Principal Component Analysis (PCA) was used to look at overall similarities and differences between samples based on gene expression. The first two principal components explain a limited part of the total variation in the data (PC1: 14.3%, PC2: 10.4%), which means that the variability is spread across many factors rather than driven by one strong effect. The PCA plot shows that most samples cluster together and there is no clear separation between groups along PC1 or PC2.
+
+# PCA + Loadings
+
+```{r}
+# loadings = gene contributions to PCs
+loadings <- as.data.frame(pca$rotation, stringsAsFactors = FALSE)
+loadings$Geneid <- rownames(loadings)
+
+# making sure PC columns are numeric
+loadings$PC1 <- as.numeric(loadings$PC1)
+loadings$PC2 <- as.numeric(loadings$PC2)
+
+#tTop genes for PC1 / PC2 by absolute loading
+top_PC1 <- loadings %>%
+  dplyr::mutate(absPC1 = abs(PC1)) %>%
+  dplyr::arrange(dplyr::desc(absPC1)) %>%
+  dplyr::slice_head(n = 50)
+
+top_PC2 <- loadings %>%
+  dplyr::mutate(absPC2 = abs(PC2)) %>%
+  dplyr::arrange(dplyr::desc(absPC2)) %>%
+  dplyr::slice_head(n = 50)
+
+# showing top 10 gene IDs
+top_PC1$Geneid[1:10]
+top_PC2$Geneid[1:10]
+```
+
+# Genes Function
+
+```{r}
+library(biomaRt)
+genes_PC1 <- top_PC1$Geneid
+
+# connect to Ensembl
+ensembl <- useMart(
+  biomart = "ensembl",
+  dataset = "hsapiens_gene_ensembl"
+)
+
+# get annotations
+annot_PC1 <- getBM(
+  attributes = c(
+    "ensembl_gene_id",
+    "hgnc_symbol",
+    "description",
+    "gene_biotype"
+  ),
+  filters = "ensembl_gene_id",
+  values = genes_PC1,
+  mart = ensembl
+)
+
+PC1_table <- top_PC1 %>%
+  dplyr::select(Geneid, PC1) %>%
+  dplyr::left_join(
+    annot_PC1,
+    by = c("Geneid" = "ensembl_gene_id")
+  )
+```
+
+```{r}
+genes_PC2 <- top_PC2$Geneid
+
+annot_PC2 <- getBM(
+  attributes = c(
+    "ensembl_gene_id",
+    "hgnc_symbol",
+    "description",
+    "gene_biotype"),
+  filters = "ensembl_gene_id",
+  values = genes_PC2,
+  mart = ensembl
+)
+
+PC2_table <- top_PC2 %>%
+  dplyr::select(Geneid, PC2) %>%
+  dplyr::left_join(
+    annot_PC2,
+    by = c("Geneid" = "ensembl_gene_id")
+  )
+
+```
+
+PC1 is mainly driven by genes involved in immune response, vesicle transport, and cellular metabolism, while PC2 reflects variation related to transcriptional regulation, RNA processing, and protein turnover.
+
+# Heatmaps
+
+```{r}
+library(pheatmap)
+
+top_genesPC1 <- top_PC1$Geneid[1:30]
+
+mat <- expr[top_genesPC1, , drop = FALSE]
+
+pheatmap(
+  mat,
+  scale = "row",          # <- kluczowe
+  show_rownames = TRUE,
+  show_colnames = FALSE
+)
+```
+
+Heatmap of genes with the highest PC1 loadings highlights opposing expression patterns across samples, consistent with the continuous separation observed along PC1 in the PCA (14.3% variance explained).
+
+```{r}
+library(pheatmap)
+
+top_genesPC2 <- top_PC2$Geneid[1:30]
+
+mat <- expr[top_genesPC2, , drop = FALSE]
+
+pheatmap(
+  mat,
+  scale = "row",          # <- kluczowe
+  show_rownames = TRUE,
+  show_colnames = FALSE
+)
+```
+
+Heatmap of top PC2-contributing genes shows weaker and more localized expression differences across samples, consistent with the limited separation observed along PC2 in the PCA (10.4% variance explained).
+
+## Summary
+
+Overall, the PCA indicates that PC1 captures the main biologically relevant axis of transcriptional variability, while PC2 reflects secondary, more heterogeneous expression differences that do not drive a clear separation of samples.
+
+# UMAP
+
+```{r}
+# Pakiety
+install.packages(c("uwot", "ggplot2", "readr", "dplyr"))  # jeśli nie masz
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(uwot)
+```
+
+```{r}
+library(ggplot2)
+expr <- as.data.frame(data)
+rownames(expr) <- expr$Geneid
+expr$Geneid <- NULL
+expr <- as.matrix(expr)
+storage.mode(expr) <- "numeric"
+
+gene_var <- apply(expr, 1, var, na.rm = TRUE)
+topN <- 2000
+expr_hv <- expr[order(gene_var, decreasing = TRUE)[1:topN], ]
+
+# PCA
+pca_umap <- prcomp(t(expr_hv), center = TRUE, scale. = TRUE)
+
+# umap
+set.seed(123)
+umap_emb <- uwot::umap(
+  pca_umap$x[, 1:30],
+  n_neighbors = 15,
+  min_dist = 0.1,
+  metric = "cosine"
+)
+
+umap_df <- as.data.frame(umap_emb)
+colnames(umap_df) <- c("UMAP1", "UMAP2")
+umap_df$sample <- rownames(pca_umap$x)
+
+#plotting
+plot(
+  umap_df$UMAP1,
+  umap_df$UMAP2,
+  pch = 16,
+  col = rgb(70,130,180,120, maxColorValue = 255),
+  xlab = "UMAP1",
+  ylab = "UMAP2",
+  main = "UMAP (top variable genes → PCA → UMAP)"
+)
+```
+
+UMAP analysis of highly variable genes shows a continuous pattern rather than clear, separate clusters. This means that gene expression differences between PBMC samples change gradually. The observed variation likely reflects differences in immune cell composition and immune activation, rather than distinct subgroups. This is consistent with the study design, where depression subgroups were identified only after combining RNA-seq data with other data types.
