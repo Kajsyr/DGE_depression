@@ -241,3 +241,28 @@ plot(
 ```
 
 UMAP analysis of highly variable genes shows a continuous pattern rather than clear, separate clusters. This means that gene expression differences between PBMC samples change gradually. The observed variation likely reflects differences in immune cell composition and immune activation, rather than distinct subgroups. This is consistent with the study design, where depression subgroups were identified only after combining RNA-seq data with other data types.
+
+## Bibliography
+
+Abbafati, C., Abbas, K. M., Abbasi, M., Abbasifard, M., Abbasi-
+Kangevari, M., Abbastabar, H., Abd-Allah, F., Abdelalim, A., Abdollahi,
+M., Abdollahpour, I., Abedi, A., Abedi, P., Abegaz, K. H., Abolhassani,
+H., Abosetugn, A. E., Aboyans, V., Abrams, E. M., Abreu, L. G., Abrigo,
+M. R. M., … Murray, C. J. L. (2020). Global burden of 369 diseases and
+injuries in 204 countries and territories, 1990–2019: a systematic analysis
+for the Global Burden of Disease Study 2019. The Lancet, 396(10258),
+1204–1222. https://doi.org/10.1016/S0140-6736(20)30925-9
+
+Gałecki, P., & Szulc, A. (2023). Psychiatria. Rozpoznania według ICD-11.
+(Vol. 1). Edra Urban & Partner.
+
+Paul, E. R., Schwieler, L., Erhardt, S., Boda, S., Trepci, A., Kämpe, R.,
+Asratian, A., Holm, L., Yngve, A., Dantzer, R., Heilig, M., Hamilton, J.
+P., & Samuelsson, M. (2022). Peripheral and central kynurenine pathway
+abnormalities in major depression. Brain, Behavior, and Immunity, 101,
+136–145. https://doi.org/10.1016/j.bbi.2022.01.002
+
+Ridley, M., Rao, G., Schilbach, F., & Patel, V. (2020). Poverty, depression,
+and anxiety: Causal evidence and mechanisms. In Science (Vol. 370, Issue
+6522). American Association for the Advancement of Science.
+https://doi.org/10.1126/science.aay0214
