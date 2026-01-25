@@ -239,10 +239,10 @@ p4 <- ggplot(pca_metadata_df, aes(x = PC1, y = PC2, color = age)) +
 ```{r}
 
 #Save raw data
-#save(metadata, counts, file = "RData/input_raw.RData")
+save(metadata, counts, file = "RData/input_raw.RData")
 
 #SAVE DATA load for dds 
-#save(metadata_filt, count_matrix, file = "RData/input_for_DGE_all.RData")
+save(metadata_filt, count_matrix, file = "RData/input_for_DGE_all.RData")
 #load("RData/input_for_DGE_all.RData")
 ```
 
@@ -262,7 +262,7 @@ dds <- DESeq(dds)
 
 ```{r}
 #Checkpoint
-#save(dds, file="RData/dds_all.Rdata")
+save(dds, file="RData/dds_all.Rdata")
 #load("RData/dds_all.Rdata")
 ```
 
@@ -402,6 +402,41 @@ annot_over_genes <- getBM(
 annot_over_genes
 ```
 ```{r}
-write_csv(annot_over_genes, file="data/overexpressed_genes.csv")
+write.csv(annot_over_genes, file="data/overexpressed_genes.csv")
+write.csv(dge_res_df, file="data/dge_res_df.csv")
+```
+
+# GO anylisis
+
+```{r}
+gene_universe <- row.names(dge_res_df)
+```
+
+```{r}
+library(dplyr)
+filtered_genes <- dge_res_df %>% filter(diffexpressed !="NO") %>% row.names()
+filtered_genes
+```
+
+
+```{r}
+library(clusterProfiler)
+library(org.Hs.eg.db) # annotation package
+GO_terms <-  enrichGO(gene = filtered_genes, #genes of interest
+                      universe = gene_universe, # all detected genes
+                      OrgDb = "org.Hs.eg.db", #species-specific annotation package
+                      pAdjustMethod = "BH", #Benjamini-Hochberg correction for multiple testing
+                      pvalueCutoff = 0.01,
+                      qvalueCutoff = 0.01, #thresholds for reporting the outcomes
+                      readable = T, # adding gene names
+                      keyType = "ENSEMBL", #the format of provided genes
+                      ont = "CC") # "Biological Processes" - GO-terms ontology - alternatives: Molecular Functions (MF) and Celular Components (CC) 
+
+GO_terms_table <- as.data.frame(GO_terms)
+GO_terms_table
+```
+```{r}
+library(enrichplot)
+dotplot(GO_terms)
 ```
 
