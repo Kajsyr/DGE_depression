@@ -34,3 +34,17 @@ The following methods were used in the analysis:
 - PCA does not reveal clear separation between diagnostic groups.
 - The observed variation likely reflects immune cell composition and immune activation.
 - These findings are consistent with the original study, where immune-related subgroups emerged only after multi-omics integration.
+
+ ## Requirements
+- R (version ≥ 4.2 recommended)
+- R packages:
+  - readr
+  - dplyr
+  - ggplot2 (optional)
+  - uwot
+  - biomaRt
+
+## Authors
+- Jan Rysiak  
+- Ihor Mokrytskyi  
+- Maya Śliwa
