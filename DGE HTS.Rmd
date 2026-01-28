@@ -6,6 +6,7 @@ date: "2026-01-08"
 
 ```{r}
 #Load Packages
+library(GGally)
 library(DESeq2)
 library(dplyr)
 library(GEOquery)
@@ -20,6 +21,23 @@ library(AnnotationDbi)
 ```
 
 ## Download, filter and prepare data
+```{bash}
+ls data
+
+```
+
+
+
+```{bash}
+source /home/janek/miniconda3/bin/activate #required by Quarto to recognize conda's commands
+conda activate sratool #activate the chosen conda environment
+
+  fasterq-dump SRR28203261 \
+    --split-files \
+    --threads 8
+
+conda deactivate #deactivate the environment
+```
 
 
 
@@ -47,16 +65,19 @@ gse <- getGEO("GSE260603", GSEMatrix = FALSE)
 gsm_list <- GSMList(gse)
 ```
 ```{r}
-library(stringr)
+library(readr)
 
-srr <- unlist(lapply(gsm_list, function(gsm) {
-  rel <- Meta(gsm)$relation
-  rel <- rel[grepl("SRA", rel)]
-  str_extract(rel, "SRR[0-9]+")
-}))
+cmd <- paste(
+  "esearch -db sra -query GSE260603 |",
+  "efetch -format runinfo"
+)
 
-srr <- unique(na.omit(srr))
-writeLines(srr, "data/fastq/SRR_list.txt")
+runinfo <- read_csv(pipe(cmd), show_col_types = FALSE)
+
+srr <- unique(runinfo$Run)
+length(srr)
+
+writeLines(srr, "SRR_list.txt")
 
 ```
 
@@ -467,5 +488,99 @@ GO_terms_table
 ```{r}
 library(enrichplot)
 dotplot(GO_terms)
+```
+# Multiomics clustering
+
+```{r}
+imune_marker_raw=read.csv("data/immune_marker_data.tsv", sep = "\t")
+imune_marker_raw
+```
+```{r}
+imune_marker<- imune_marker_raw %>% filter(analysis_type=="initial") %>% slice (1:262)
+
+rownames(imune_marker) <- imune_marker$ID
+
+
+to_save <- imune_marker %>% dplyr::select(!c(age, sex, BMI, status, analysis_type, batch_variable))
+write_tsv(to_save, file = "data/sumo/immune_markers.tsv")
+
+to_PCA <- imune_marker %>% dplyr::select(!c(ID, age, sex, BMI, status, analysis_type, batch_variable))
+to_PCA
+```
+
+```{r}
+sum(is.na(to_PCA))
+sapply(to_PCA, class)
+ggpairs(to_PCA)
+
+```
+
+
+
+```{r}
+
+#Run PCA
+to_PCA_clean <- na.omit(to_PCA)
+pca <- prcomp(to_PCA_clean, scale. = TRUE)
+
+
+#Transform to dataframe
+#Tu się coś wykrzacza ale wystarzy pujśc dalej i działa xd
+pca_plot <- as.data.frame(pca$x) 
+pca_plot
+```
+
+
+
+
+
+```{r}
+# Combine PCA coordinates with metadata
+pca_metadata_df <- cbind(pca_plot, metadata_filt)
+
+# pca gender
+p1 <- ggplot(pca_metadata_df, aes(x = PC1, y = PC2, color = gender)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(title = "Gender", color = "Gender") +
+  theme_minimal(base_size = 12)
+
+#pca affect
+p2 <- ggplot(pca_metadata_df, aes(x = PC1, y = PC2, color = affected)) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(title = "Affected", color = "Affected") +
+  theme_minimal(base_size = 12)
+
+#pca bmi)
+p3 <- ggplot(pca_metadata_df, aes(x = PC1, y = PC2, color = bmi)) +
+  geom_point(size = 3, alpha = 0.8) +
+  scale_color_gradient(low = "lightblue", high = "darkblue") +
+  labs(title = "BMI", color = "BMI") +
+  theme_minimal(base_size = 12)
+
+# pca age
+p4 <- ggplot(pca_metadata_df, aes(x = PC1, y = PC2, color = age)) +
+  geom_point(size = 3, alpha = 0.8) +
+  scale_color_gradient(low = "lightgreen", high = "darkgreen") +
+  labs(title = "Age", color = "Age") +
+  theme_minimal(base_size = 12)
+
+# Combine 4 plots into 2x2 grid
+(p1 | p2) / (p3 | p4)
+```
+```{bash}
+ls data/sumo
+```
+
+
+
+
+
+```{bash}
+source /home/janek/miniconda3/bin/activate #required by Quarto to recognize conda's commands
+conda activate SUMO
+
+sumo prepare -plot LAML.png data/sumo/immune_markers.tsv output.npz
+
+conda deactivate #deactivate the environment
 ```
 
