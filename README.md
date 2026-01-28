@@ -49,8 +49,7 @@ The following methods were used in the analysis:
 - The observed variation likely reflects immune cell composition and immune activation.
 - These findings are consistent with the original study, where immune-related subgroups emerged only after multi-omics integration.
 - Enrichment analysis using MSigDB C7 immunologic gene sets revealed distinct transcriptional patterns between severe and healthy samples.
-- Upregulated genes were predominantly non-coding transcripts, including lncRNAs, Y RNAs, and transcribed pseudogenes, most of which lack functional annotation in known immune pathways.
-- This suggests that disease-associated transcriptional activation may involve regulatory or poorly characterized RNA mechanisms rather than classical protein-coding immune responses.
+- Upregulated genes were predominantly non-coding transcripts, including lncRNAs, Y RNAs, and transcribed pseudogenes, most of which lack functional annotation in known immune pathways. This suggests that disease-associated transcriptional activation may involve regulatory or poorly characterized RNA mechanisms rather than classical protein-coding immune responses.
 - Downregulated genes included protein-coding genes involved in cytoskeletal organization, phosphatase regulation, and cell cycle–related processes.
 - The long non-coding RNAs XIST and TSIX, key regulators of X-chromosome inactivation, were significantly downregulated, indicating potential disruption of epigenetic regulation in the severe group.
 
