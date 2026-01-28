@@ -20,8 +20,7 @@ The inflammatory theory of depression postulates that chronic inflammation in th
 - **Tissue:** Peripheral blood mononuclear cells (PBMCs)
 - **Samples:** Individuals with stress-related mental disorders and healthy controls
 
-The original study applied a multi-omics approach combining RNA-seq, immune markers, and clinical variables.  
-In this project, we focus only on the RNA-seq component for exploratory transcriptomic analysis.
+The original study applied a multi-omics approach combining RNA-seq, immune markers, and clinical variables. In this project, we focus only on the RNA-seq component for exploratory transcriptomic analysis.
 
 ## Differential expression analysis
 Differential expression analysis revealed that the upregulated gene set was dominated by non-coding transcripts, including long non-coding RNAs (lncRNAs), Y RNAs, and several transcribed pseudogenes (e.g. PRKY, ANOS2P, TXLNGY). Most of these transcripts are poorly characterized and lack evidence for protein-coding potential or involvement in known biological pathways.
