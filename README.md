@@ -6,7 +6,7 @@ We focus on exploratory data analysis and unsupervised methods to investigate he
 
 The analysis is based on a publicly available dataset from the GEO database (GSE260603).
 
-## Theory
+## Introduction
 The contemporary world, with its financial inequalities, employment instability, and global crises such as climate change or the pandemic, creates a favorable environment for the development of affective disorders (Ridley et al., 2020). Within just the first two decades of the 21st century, the number of people suffering from depression increased by nearly 60%, underscoring the need for a deeper understanding of this disorder and its etiology in order to effectively address the growing mental health crisis (Abbafati et al., 2020).
 
 According to the ICD-11 classification, the diagnosis of a depressive episode requires the presence of at least five symptoms, one of which must belong to the affective cluster (Gałecki & Szulc, 2023). Additional symptoms include difficulties with concentration and memory, extremely low self-esteem, inappropriate feelings of guilt, sleep and appetite disturbances, as well as suicidal thoughts or behaviors. The ICD-11 classification also allows for the specification of symptom severity and the presence of psychotic features, which is crucial when deciding whether pharmacological treatment should be initiated.
@@ -23,6 +23,11 @@ The inflammatory theory of depression postulates that chronic inflammation in th
 
 The original study applied a multi-omics approach combining RNA-seq, immune markers, and clinical variables.  
 In this project, we focus only on the RNA-seq component for exploratory transcriptomic analysis.
+
+## Differential expression analysis
+Differential expression analysis revealed that the upregulated gene set was dominated by non-coding transcripts, including long non-coding RNAs (lncRNAs), Y RNAs, and several transcribed pseudogenes (e.g. PRKY, ANOS2P, TXLNGY). Most of these transcripts are poorly characterized and lack evidence for protein-coding potential or involvement in known biological pathways.
+
+In contrast, the downregulated genes included protein-coding genes associated with cytoskeletal organization (MAP7D2), regulation of protein phosphatase activity (PPP1R2C), and cell cycle–related processes such as mitotic spindle control and chromatid segregation (ERCC6L). Additionally, two key long non-coding RNAs involved in X-chromosome inactivation, TSIX and XIST, were significantly downregulated.
 
 ## Analysis goals
 The main objectives of this project are:
