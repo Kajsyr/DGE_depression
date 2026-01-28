@@ -10,27 +10,27 @@ affiliations:
   - id: JU
     name: Jagiellonian University
 format: 
-  html:
-    df-print: kable
-    tidy: false
-    embed-resources: false
-    theme: lumen
+  pdf:
+    documentclass: article
     toc: true
-    toc-location: left
-    toc-depth: 6
-    toc-expand: 6
-    code-tools:
-      source: true
-      toggle: true
-    code-fold: false
-    code-summary: "Show the code"
-    code-overflow: wrap
-    page-layout: full
-execute:
-  eval: false
-  cache: true
+    toc-depth: 3
+    number-sections: true
+    fontsize: 11pt
+    geometry: margin=1in
+    fig-width: 6
+    fig-height: 4
+    fig-cap: true
+    keep-md: false
+    include-in-header: ""      # <- pusty string zamiast null
+    template: ""               # <- pusty string zamiast null
+    latex-engine: xelatex
 editor: visual
+execute:
+  cache: true
+  eval: false
 ---
+
+
 
 ```{r}
 #Load Packages
