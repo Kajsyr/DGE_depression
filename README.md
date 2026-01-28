@@ -49,6 +49,18 @@ Figure 1. Sex distribution across affected and control groups
 
 The figure presents the number of female and male samples in the affected and control groups. The affected group contains a substantially higher number of samples than the control group, with females being overrepresented in both groups. This unequal group size and sex distribution were considered during interpretation of downstream analyses.
 
+<img width="590" height="434" alt="Screenshot 2026-01-28 at 21 39 07" src="https://github.com/user-attachments/assets/7e984992-2fef-40d8-9511-e69cd65f07fd" />
+Figure 2. PCA of gene expression data with samples colored by gender, affected status, BMI, and age
+
+Principal component analysis (PCA) was performed on normalized gene expression data to assess global sources of variation across samples. Samples were colored according to gender, affected status, body mass index (BMI), and age. No clear separation of samples was observed along the first two principal components with respect to any of the examined variables, indicating that the main axes of transcriptomic variation are not driven by these demographic or clinical factors.
+
+<img width="528" height="434" alt="Screenshot 2026-01-28 at 21 39 34" src="https://github.com/user-attachments/assets/7aa33800-4a3c-4798-99a5-14d86508b583" />
+Figure 3. Volcano plot showing differential gene expression between affected and control samples
+
+The volcano plot summarizes the results of differential gene expression analysis comparing affected and control samples. Each point represents a gene, plotted by log2 fold change (log2FC) on the x-axis and statistical significance expressed as −log10(adjusted p-value) on the y-axis. Genes passing the significance thresholds (|log2FC| > 1 and adjusted p-value < 0.01) are highlighted, with upregulated genes shown in red and downregulated genes in blue, while non-significant genes are shown in grey. This visualization highlights a subset of genes exhibiting strong and statistically significant expression changes between the two groups.
+
+
+
 ## Key observations --> PLEASE UPDATE
 - PCA does not reveal clear separation between diagnostic groups.
 - The observed variation likely reflects immune cell composition and immune activation.
