@@ -146,3 +146,7 @@ Ridley, M., Rao, G., Schilbach, F., & Patel, V. (2020). Poverty, depression,
 and anxiety: Causal evidence and mechanisms. In Science (Vol. 370, Issue
 6522). American Association for the Advancement of Science.
 https://doi.org/10.1126/science.aay0214
+
+Love MI, Huber W, Anders S (2014). “Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2.” Genome Biology, 15, 550. doi:10.1186/s13059-014-0550-8.
+
+Sienkiewicz, K., Chen, J., Chatrath, A., Lawson, J. T., Sheffield, N. C., Zhang, L., & Ratan, A. (2022). Detecting molecular subtypes from multi-omics datasets using SUMO. In Cell Reports Methods (Vol. 2, Issue 1, p. 100152). Elsevier BV. https://doi.org/10.1016/j.crmeth.2021.100152
