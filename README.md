@@ -52,9 +52,9 @@ The figure presents the number of female and male samples in the affected and co
 
 <img width="590" height="434" alt="Screenshot 2026-01-28 at 21 39 07" src="https://github.com/user-attachments/assets/7e984992-2fef-40d8-9511-e69cd65f07fd" />
 
-Figure 2. PCA of gene expression data with samples colored by gender, affected status, BMI, and age
+Figure 2. Principal component analysis of gene expression data after differential expression analysis
 
-Principal component analysis (PCA) was performed on normalized gene expression data to assess global sources of variation across samples. Samples were colored according to gender, affected status, body mass index (BMI), and age. No clear separation of samples was observed along the first two principal components with respect to any of the examined variables, indicating that the main axes of transcriptomic variation are not driven by these demographic or clinical factors.
+Principal component analysis (PCA) was repeated after differential gene expression (DGE) analysis to re-examine global expression patterns in the context of identified gene-level differences. Samples were colored according to gender, affected status, body mass index (BMI), and age. Similar to the pre-DGE PCA, no clear separation of samples along the first two principal components was observed for any of the examined variables. This indicates that, despite the presence of differentially expressed genes, global transcriptomic structure remains largely overlapping between groups.
 
 <img width="528" height="434" alt="Screenshot 2026-01-28 at 21 39 34" src="https://github.com/user-attachments/assets/7aa33800-4a3c-4798-99a5-14d86508b583" />
 
@@ -72,7 +72,7 @@ The bar plot shows the proportion of affected and control samples within each cl
 
 Figure 5. PCA of normalized gene expression data with samples colored by gender, affected status, BMI, and age
 
-Principal component analysis (PCA) was performed on normalized gene expression data to assess global sources of variation across samples. Samples were colored according to gender, affected status, body mass index (BMI), and age. No clear separation of samples was observed along the first two principal components with respect to any of the examined variables, indicating that the main axes of transcriptomic variation are not driven by these demographic or clinical factors.
+Principal component analysis (PCA) was performed on normalized gene expression data prior to differential gene expression (DGE) analysis to assess global patterns of variability and identify potential confounding effects. Samples were colored according to gender, affected status, body mass index (BMI), and age. No clear separation of samples along the first two principal components was observed for any of the examined variables, indicating that none of these factors dominates the major sources of transcriptomic variance before DGE analysis.
 
 <img width="1344" height="960" alt="619960021_942029334862976_5741874887499253879_n" src="https://github.com/user-attachments/assets/98033ab0-9987-43f2-92d2-66272b264dac" />
 
