@@ -1,8 +1,7 @@
 # Exploring Immune Dysregulation in Depression Using RNA-seq
 
 ## Project overview
-This project explores immune-related transcriptomic variation in depression using RNA-seq data from peripheral blood mononuclear cells (PBMCs).  
-We focus on exploratory data analysis and unsupervised methods to investigate heterogeneity in gene expression rather than strict case–control comparisons.
+This project explores immune-related transcriptomic variation in depression using RNA-seq data from peripheral blood mononuclear cells (PBMCs). We focus on exploratory data analysis and unsupervised methods to investigate heterogeneity in gene expression rather than strict case–control comparisons.
 
 The analysis is based on a publicly available dataset from the GEO database (GSE260603).
 
