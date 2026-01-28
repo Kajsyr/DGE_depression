@@ -40,11 +40,19 @@ The following methods were used in the analysis:
 - Principal Component Analysis (PCA),
 - analysis of PCA loadings to identify genes driving transcriptomic variation,
 - construction of gene expression signatures based on top PCA loadings.
+- gene set annotation: immunologic gene sets (MSigDB category C7) were retrieved using the msigdbr package; gene sets were restricted to Homo sapiens and mapped using Ensembl gene IDs.
+- background gene universe: a background gene list was defined from normalized RNA-seq expression data (GSE260603_normalized_data.tsv).
+- enrichment analysis: over-representation analysis was performed using clusterProfiler::enricher(); upregulated and downregulated gene sets were analyzed independently.
 
 ## Key observations --> PLEASE UPDATE
 - PCA does not reveal clear separation between diagnostic groups.
 - The observed variation likely reflects immune cell composition and immune activation.
 - These findings are consistent with the original study, where immune-related subgroups emerged only after multi-omics integration.
+- Enrichment analysis using MSigDB C7 immunologic gene sets revealed distinct transcriptional patterns between severe and healthy samples.
+- Upregulated genes were predominantly non-coding transcripts, including lncRNAs, Y RNAs, and transcribed pseudogenes, most of which lack functional annotation in known immune pathways.
+- This suggests that disease-associated transcriptional activation may involve regulatory or poorly characterized RNA mechanisms rather than classical protein-coding immune responses.
+- Downregulated genes included protein-coding genes involved in cytoskeletal organization, phosphatase regulation, and cell cycle–related processes.
+- The long non-coding RNAs XIST and TSIX, key regulators of X-chromosome inactivation, were significantly downregulated, indicating potential disruption of epigenetic regulation in the severe group.
 
  ## Requirements
 - R (version ≥ 4.2 recommended)
@@ -53,7 +61,10 @@ The following methods were used in the analysis:
   - dplyr
   - ggplot2 (optional)
   - uwot
+  - tidyverse
   - biomaRt
+  - clusterProfiler
+  - msigdbr
 
 ## Authors
 - Jan Rysiak  
