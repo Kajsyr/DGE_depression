@@ -1,0 +1,78 @@
+---
+title: "Project"
+format: html
+editor: visual
+---
+
+```{r}
+rm(list=ls(all.names=TRUE))
+gc()
+options(max.print = .Machine$integer.max, scipen = 999, stringsAsFactors = F, dplyr.summarise.inform = F)
+# Loading relevant libraries 
+library(tidyverse)
+library(clusterProfiler)
+setwd("/home/ihor/Documents/HTS/Project/")
+```
+
+```{r}
+dge_res_df <- read.csv("dge_res_df.csv", row.names = 1)
+```
+
+```{r}
+library(msigdbr)
+name_of_gene_set <- 'C7'
+gene_sets_df <- msigdbr(species = "Homo sapiens", category = name_of_gene_set)
+head(gene_sets_df)
+```
+
+```{r}
+gene_sets <- gene_sets_df %>%
+  dplyr::select(gs_name, ensembl_gene)
+```
+
+```{r}
+df_sig <- dge_res_df[which(dge_res_df$diffexpressed!="NO"),]
+deg_results_list <- split(df_sig, df_sig$diffexpressed)
+```
+
+```{r}
+background_genes <- read.table("/home/ihor/Documents/HTS/Project/GSE260603_normalized_data.tsv", sep="\t", header = TRUE) %>% select(Geneid)
+rm(backgroud_genes)
+```
+
+```{r}
+## 3. Run ClusterProfiler -----------------------------------------------
+
+# Settings
+name_of_comparison <- 'severevshealthy'
+padj_cutoff <- 0.05
+genecount_cutoff <- 5
+filename_prefix <- paste0(name_of_comparison, '_', name_of_gene_set)
+```
+
+```{r}
+# Run clusterProfiler on each sub-dataframe
+res <- lapply(names(deg_results_list),
+              function(x) enricher(gene = rownames(deg_results_list[[x]]),
+                                   TERM2GENE = gene_sets,
+                                   universe = background_genes,
+                                   qvalueCutoff = 0.2))
+names(res) <- names(deg_results_list)
+
+cat("Enrichment analysis results:\n")
+for(i in names(res)) {
+  cat(paste(i, ":", nrow(as.data.frame(res[[i]])), "enriched pathways\n"))
+}
+```
+
+```{r}
+#Convert the enrichResults to a dataframe with the pathways
+res_df <- lapply(names(res), function(x) rbind(res[[x]]@result))
+names(res_df) <- names(res)
+res_df <- do.call(rbind, res_df)
+head(res_df)
+```
+
+```{r}
+write.csv(res_df, "results.csv")
+```

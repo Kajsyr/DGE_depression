@@ -20,29 +20,9 @@ library(org.Hs.eg.db)
 library(AnnotationDbi)
 ```
 
-## Download, filter and prepare data
-```{bash}
-ls data
+# Download, filter and prepare data
 
-```
-
-
-
-```{bash}
-source /home/janek/miniconda3/bin/activate #required by Quarto to recognize conda's commands
-conda activate sratool #activate the chosen conda environment
-
-  fasterq-dump SRR28203261 \
-    --split-files \
-    --threads 8
-
-conda deactivate #deactivate the environment
-```
-
-
-
-
-### Download using wget
+## Download data
 
 ```{bash}
 #Metadate
@@ -55,61 +35,29 @@ conda deactivate #deactivate the environment
 #wget --directory-prefix=data https://ftp.ncbi.nlm.nih.gov/geo/series/GSE260nnn/GSE260603/suppl/GSE260603%5Fnormalized%5Fdata.tsv.gz
 ```
 
-```{bash}
-ls data
-```
-### Dowload fastq
-
-```{r}
-gse <- getGEO("GSE260603", GSEMatrix = FALSE)
-gsm_list <- GSMList(gse)
-```
-```{r}
-library(readr)
-
-cmd <- paste(
-  "esearch -db sra -query GSE260603 |",
-  "efetch -format runinfo"
-)
-
-runinfo <- read_csv(pipe(cmd), show_col_types = FALSE)
-
-srr <- unique(runinfo$Run)
-length(srr)
-
-writeLines(srr, "SRR_list.txt")
-
-```
-
-
-
-# Read metadate and filter
-
-
-
-
+## Prepare metadata
 
 ```{r}
 #Read metadata and inspect
-gse <- getGEO(filename="data/GSE260603_series_matrix.txt.gz", GSEMatrix=TRUE)
-gsm_list<-GSMList(gse)
+gse <- getGEO(filename="data/GSE260603_series_matrix.txt.gz", GSEMatrix=FALSE)
+#gsm_list<-GSMList(gse)
 metadata <- pData(gse)
 colnames(metadata)
-gsm_list
+
 ```
 
 ```{r}
-#Rename and filter
+#Rename columns and extract nedeed
+#Set new name
 old_names <- c("age:ch1", "Sex:ch1", "bmi:ch1", "characteristics_ch1.4")
 new_names <- c("age", "gender", "bmi", "affected")
 
+#Rename
 colnames(metadata)[match(old_names, colnames(metadata))] <- new_names
-
-
 ```
 
 ```{r}
-#Deal with brake row. For 'GSM8120701' there is some EROR in data. 
+#Deal with brake row. For 'GSM8120701' there is some ERROR in data. 
 if (metadata['GSM8120701', 13] == 	"status: affected"){
   metadata['GSM8120701', 14:20] <- metadata['GSM8120701', 13:19] 
   metadata['GSM8120701', 13]<-NaN
@@ -118,9 +66,9 @@ if (metadata['GSM8120701', 13] == 	"status: affected"){
 ```
 
 ```{r}
+#Filter, check and "civilize"  metadata
 #Chose columns
 metadata_filt<-metadata[c('title', 'age', 'gender', 'bmi','affected')]
-
 
 #New rownems
 metadata_filt$title <- gsub(".*(sample_[0-9]+).*", "\\1", metadata_filt$title)
@@ -137,7 +85,8 @@ metadata_filt<-subset(metadata_filt, select=-(title))
 
 
 class(metadata_filt$bmi)
-# Convert BMI and age to numeric if needed
+
+# Convert BMI and age to numeric
 metadata_filt$bmi <- as.numeric(metadata_filt$bmi)
 metadata_filt$age <- as.numeric(as.character(metadata_filt$age))
 
@@ -161,6 +110,7 @@ summary_table <- metadata_filt %>%
 
 summary_table
 
+# Plot 
 ggplot(summary_table, aes(x = affected, y = n, fill = gender)) +
   geom_bar(stat = "identity", position = "dodge") +
   theme_minimal() +
@@ -173,7 +123,7 @@ ggplot(summary_table, aes(x = affected, y = n, fill = gender)) +
 
 ```
 
-# Read and filter count matrix
+## Read and filter count matrix
 
 ```{r}
 #Get count matrix
@@ -181,7 +131,7 @@ counts <- data.table::fread("data/GSE260603_raw_counts.tsv.gz")
 ```
 
 ```{r}
-#COnvert to array 
+#Convert to array 
 gene_ids <- counts[[1]]
 count_matrix_raw <- as.matrix(counts[, -1])
 rownames(count_matrix_raw) <- gene_ids
@@ -202,12 +152,33 @@ chr_map <- AnnotationDbi::select(
 genes_Y <- chr_map$ENSEMBL[chr_map$CHR == "Y"]
 genes_Y<-unique(genes_Y)
 
-# FIlter out genes form count matrix
+# Filter out genes form count matrix
 count_matrix <- count_matrix_raw[
   !rownames(count_matrix_raw) %in% genes_Y,
 ]
 
 ```
+```{r}
+library(TxDb.Hsapiens.UCSC.hg38.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
+
+# Mapowanie ENSEMBL na chromosomy za pomocą nowych nazw kolumn (TXCHROM)
+chr_map <- AnnotationDbi::select(
+  txdb,
+  keys = rownames(count_matrix_raw),
+  keytype = "ENSEMBL",
+  columns = "TXCHROM"
+)
+
+# Filtrowanie (z uwzględnieniem, że TxDb używa formatu "chrY")
+genes_Y <- chr_map$ENSEMBL[chr_map$TXCHROM == "chrY"]
+genes_Y <- na.omit(unique(genes_Y))
+
+count_matrix <- count_matrix_raw[!rownames(count_matrix_raw) %in% genes_Y, ]
+
+```
+
+
 
 ## Read and filter Normalized data
 
@@ -289,14 +260,14 @@ p4 <- ggplot(pca_metadata_df, aes(x = PC1, y = PC2, color = age)) +
 ```{r}
 
 #Save raw data
-save(metadata, counts, file = "RData/input_raw.RData")
+#save(metadata, counts, file = "RData/input_raw.RData")
 
 #SAVE DATA load for dds 
-save(metadata_filt, count_matrix, file = "RData/input_for_DGE_all.RData")
+#save(metadata_filt, count_matrix, file = "RData/input_for_DGE_all.RData")
 #load("RData/input_for_DGE_all.RData")
 ```
 
-## Use DESeq2
+# DGE DESeq2
 
 ```{r}
 #Perform DGE
@@ -312,7 +283,7 @@ dds <- DESeq(dds)
 
 ```{r}
 #Checkpoint
-save(dds, file="RData/dds_all.Rdata")
+#save(dds, file="RData/dds_all.Rdata")
 #load("RData/dds_all.Rdata")
 ```
 
@@ -376,7 +347,8 @@ ggplot(data = dge_res_df, aes(x = log2FoldChange, y = -log10(padj), col = diffex
 # PCA
 
 ```{r}
-to_PCA <- norm_counts %>% t() # transpose a table (rows become columns)
+# transpose a table
+to_PCA <- norm_counts %>% t()  
 
 #Run PCA
 pca <- prcomp(to_PCA) #run PCA (the result is a list)
@@ -422,90 +394,91 @@ p4 <- ggplot(pca_metadata_df, aes(x = PC1, y = PC2, color = age)) +
 ```
 
 # Gene function
-
 ```{r}
-library(biomaRt)
-over_genes_name <- rownames(overexpressed_genes)
-```
-
-```{r}
-
-# connect to Ensembl
-ensembl <- useMart(
-  biomart = "ensembl",
-  dataset = "hsapiens_gene_ensembl"
-)
-
-# get annotations
-annot_over_genes <- getBM(
-  attributes = c(
-    "ensembl_gene_id",
-    "hgnc_symbol",
-    "description",
-    "gene_biotype"
-  ),
-  filters = "ensembl_gene_id",
-  values = over_genes_name,
-  mart = ensembl
-)
-
-annot_over_genes
-```
-```{r}
-write.csv(annot_over_genes, file="data/overexpressed_genes.csv")
-write.csv(dge_res_df, file="data/dge_res_df.csv")
-```
-
-# GO anylisis
-
-```{r}
-gene_universe <- row.names(dge_res_df)
-```
-
-```{r}
-library(dplyr)
-filtered_genes <- dge_res_df %>% filter(diffexpressed !="NO") %>% row.names()
-filtered_genes
+library(msigdbr)
 ```
 
 
-```{r}
-library(clusterProfiler)
-library(org.Hs.eg.db) # annotation package
-GO_terms <-  enrichGO(gene = filtered_genes, #genes of interest
-                      universe = gene_universe, # all detected genes
-                      OrgDb = "org.Hs.eg.db", #species-specific annotation package
-                      pAdjustMethod = "BH", #Benjamini-Hochberg correction for multiple testing
-                      pvalueCutoff = 0.01,
-                      qvalueCutoff = 0.01, #thresholds for reporting the outcomes
-                      readable = T, # adding gene names
-                      keyType = "ENSEMBL", #the format of provided genes
-                      ont = "CC") # "Biological Processes" - GO-terms ontology - alternatives: Molecular Functions (MF) and Celular Components (CC) 
 
-GO_terms_table <- as.data.frame(GO_terms)
-GO_terms_table
-```
 ```{r}
-library(enrichplot)
-dotplot(GO_terms)
+dge_res_df <- read.csv("data/dge_res_df.csv", row.names = 1)
 ```
-# Multiomics clustering
+
+```{r}
+name_of_gene_set <- 'C7'
+gene_sets_df <- msigdbr(species = "Homo sapiens", category = name_of_gene_set)
+head(gene_sets_df)
+```
+
+```{r}
+gene_sets <- gene_sets_df %>%
+  dplyr::select(gs_name, ensembl_gene)
+```
+
+```{r}
+df_sig <- dge_res_df[which(dge_res_df$diffexpressed!="NO"),]
+deg_results_list <- split(df_sig, df_sig$diffexpressed)
+```
+
+```{r}
+background_genes <- data_normalized %>% select(Geneid)
+rm(backgroud_genes)
+```
+
+```{r}
+## Run ClusterProfiler
+# Settings
+name_of_comparison <- 'severevshealthy'
+padj_cutoff <- 0.05
+genecount_cutoff <- 5
+filename_prefix <- paste0(name_of_comparison, '_', name_of_gene_set)
+```
+
+```{r}
+# Run clusterProfiler on each sub-dataframe
+res <- lapply(names(deg_results_list),
+              function(x) enricher(gene = rownames(deg_results_list[[x]]),
+                                   TERM2GENE = gene_sets,
+                                   universe = background_genes,
+                                   qvalueCutoff = 0.2))
+names(res) <- names(deg_results_list)
+
+cat("Enrichment analysis results:\n")
+for(i in names(res)) {
+  cat(paste(i, ":", nrow(as.data.frame(res[[i]])), "enriched pathways\n"))
+}
+```
+
+```{r}
+#Convert the enrichResults to a dataframe with the pathways
+res_df <- lapply(names(res), function(x) rbind(res[[x]]@result))
+names(res_df) <- names(res)
+res_df <- do.call(rbind, res_df)
+head(res_df)
+```
+
+```{r}
+write.csv(res_df, "results.csv")
+```
+# Multiomics clustering SUMO
 
 ```{r}
 imune_marker_raw=read.csv("data/immune_marker_data.tsv", sep = "\t")
 imune_marker_raw
 ```
 ```{r}
+#Filter out not use sample
 imune_marker<- imune_marker_raw %>% filter(analysis_type=="initial") %>% slice (1:262)
 
+#Change rownames
 rownames(imune_marker) <- imune_marker$ID
 
-
+#Save to file
 to_save <- imune_marker %>% dplyr::select(!c(age, sex, BMI, status, analysis_type, batch_variable))
 write_tsv(to_save, file = "data/sumo/immune_markers.tsv")
 
-to_PCA <- imune_marker %>% dplyr::select(!c(ID, age, sex, BMI, status, analysis_type, batch_variable))
-to_PCA
+imune_marker_numeric <- imune_marker %>% dplyr::select(!c(ID, age, sex, BMI, status, analysis_type, batch_variable))
+imune_marker_numeric
 ```
 
 ```{r}
@@ -572,15 +545,180 @@ ls data/sumo
 ```
 
 
+```{r}
+results <- lapply(imune_marker_numeric, shapiro.test)
+results
+```
+
+```{r}
+sum(is.na(imune_marker_numeric))
+```
+
+## Normalize data
+
+```{r}
+#Prepare data for sumo
+#Handle missing values, fill NA with mean()
+
+df_imput <- (
+  apply(imune_marker_numeric, 1, function(x) {
+    x[is.na(x)] <- mean(x, na.rm = TRUE)
+    x
+  })
+)
+
+#Feature-wise standardization (mean=0, sd=1)
+df_scaled <- t(scale(t(df_imput)))
+
+#Verify scaling
+feature_means <- rowMeans(df_scaled)
+feature_sds <- apply(df_scaled, 1, sd)
+
+summary(feature_means)
+summary(feature_sds)
+
+# Write output
+write.table(
+  df_scaled,
+  file = "sumo/immune_markers.tsv",
+  sep = "\t",
+  quote = FALSE,
+  col.names = NA
+)
+head(df_scaled)
+```
+### DGE data
+```{r}
+vsd <- vst(dds, blind = TRUE)
+expr <- assay(vsd)
+
+# Variable genes (recommended)
+vars <- apply(expr, 1, var)
+genes_use <- names(sort(vars, decreasing = TRUE))[1:2000]
+
+expr <- expr[genes_use, ]
+expr_scaled <- t(scale(t(expr)))
+
+write.table(
+  expr_scaled,
+  "sumo/sumo_rnaseq.tsv",
+  sep = "\t",
+  quote = FALSE,
+  col.names = NA
+)
+
+```
+
+### Metadata
+```{r}
+#Create labels.tsv We need becouse of sumo evaluate
+label_affected <- metadata_filt %>%
+  rownames_to_column(var = "sample") %>%
+  mutate(label = case_when(
+    affected == "control"  ~ 0,
+    affected == "affected" ~ 1,
+    TRUE                   ~ NA_real_
+  )) %>%
+  dplyr::select(sample, label) %>%
+  as_tibble()
+
+label_gender <- metadata_filt %>%
+  rownames_to_column(var = "sample") %>%
+  mutate(label = case_when(
+    gender == "male"  ~ 0,
+    gender == "female" ~ 1,
+    TRUE                   ~ NA_real_
+  )) %>%
+  dplyr::select(sample, label) %>%
+  as_tibble()
+
+label_affected
+label_gender
+
+write_tsv(label, "sumo/labels_affected.tsv")
+write_tsv(label, "sumo/labels_gender.tsv")
+```
+
+
+
+## Run SUMO
+```{bash}
+source /home/janek/miniconda3/bin/activate #required by Quarto to recognize conda's commands
+conda activate SUMO
+cd sumo
+sumo prepare -atol 0.1 -plot LAML.png immune_markers.tsv,sumo_rnaseq.tsv output.npz 
+cd ..
+conda deactivate #deactivate the environment
+```
+```{bash}
+source /home/janek/miniconda3/bin/activate #required by Quarto to recognize conda's commands
+conda activate SUMO
+cd sumo
+
+sumo run output.npz 2,4 LAML
+
+cd ..
+conda deactivate #deactivate the environment
+```
 
 
 
 ```{bash}
 source /home/janek/miniconda3/bin/activate #required by Quarto to recognize conda's commands
 conda activate SUMO
+cd sumo
 
-sumo prepare -plot LAML.png data/sumo/immune_markers.tsv output.npz
+sumo run output.npz 2,7 LAML -rep 10 -r 4 
 
+cd ..
 conda deactivate #deactivate the environment
+```
+
+
+
+```{bash}
+source /home/janek/miniconda3/bin/activate #required by Quarto to recognize conda's commands
+conda activate SUMO
+cd sumo
+sumo evaluate LAML/k7/clusters.tsv labels_affected.tsv
+cd ..
+conda deactivate #deactivate the environment
+```
+How to inerprate?
+NMI (Normalized Mutual Information): 
+
+## Anylise SUMO output
+
+```{r}
+# Cluster assignments
+clusters <- read.table("sumo/LAML/k2/clusters.tsv", header=TRUE)
+clusters
+# columns: Sample, Cluster
+rownames(clusters)<-clusters$sample
+# Merge clusters with metadata
+df <- merge(clusters, metadata_filt, by='row.names')
+head(df)
+```
+```{r}
+table(df$label, df$affected)
+
+```
+```{r}
+prop.table(table(df$label, df$affected), 1)
+
+```
+
+```{r}
+fisher.test(table(df$label, df$affected))
+
+```
+
+```{r}
+ggplot(df, aes(x=factor(label), fill=factor(affected))) +
+  geom_bar(position="fill") +
+  labs(x="Cluster", y="Proportion", fill="Affected") +
+  scale_y_continuous(labels=scales::percent_format()) +
+  theme_minimal()
+
 ```
 
