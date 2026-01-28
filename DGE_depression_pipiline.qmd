@@ -1,9 +1,35 @@
 ---
-title: "DGE Projekt"
-output:
-  html_document: default
-  pdf_document: default
-date: "2026-01-08"
+title: "HTS DGE depression"
+author:
+  - name: Maya Śliwa
+  - name: Igor Mokrytskyi
+  - name: Jan Rysiak
+date: 2026-10-07
+date-format: "d MMM yyyy"
+affiliations:
+  - id: JU
+    name: Jagiellonian University
+format: 
+  html:
+    df-print: kable
+    tidy: false
+    embed-resources: false
+    theme: lumen
+    toc: true
+    toc-location: left
+    toc-depth: 6
+    toc-expand: 6
+    code-tools:
+      source: true
+      toggle: true
+    code-fold: false
+    code-summary: "Show the code"
+    code-overflow: wrap
+    page-layout: full
+execute:
+  eval: false
+  cache: true
+editor: visual
 ---
 
 ```{r}
@@ -49,7 +75,7 @@ colnames(metadata)
 ```
 
 ```{r}
-#Rename columns and extract nedeed
+#Rename columns and extract nedeed columns
 #Set new name
 old_names <- c("age:ch1", "Sex:ch1", "bmi:ch1", "characteristics_ch1.4")
 new_names <- c("age", "gender", "bmi", "affected")
@@ -160,27 +186,6 @@ count_matrix <- count_matrix_raw[
 ]
 
 ```
-```{r}
-library(TxDb.Hsapiens.UCSC.hg38.knownGene)
-txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
-
-# Mapowanie ENSEMBL na chromosomy za pomocą nowych nazw kolumn (TXCHROM)
-chr_map <- AnnotationDbi::select(
-  txdb,
-  keys = rownames(count_matrix_raw),
-  keytype = "ENSEMBL",
-  columns = "TXCHROM"
-)
-
-# Filtrowanie (z uwzględnieniem, że TxDb używa formatu "chrY")
-genes_Y <- chr_map$ENSEMBL[chr_map$TXCHROM == "chrY"]
-genes_Y <- na.omit(unique(genes_Y))
-
-count_matrix <- count_matrix_raw[!rownames(count_matrix_raw) %in% genes_Y, ]
-
-```
-
-
 
 ## Read and filter Normalized data
 
@@ -214,9 +219,9 @@ pca <- prcomp(t(expr), center = TRUE, scale. = TRUE)
 
 ```{r}
 # data frame
-pca_df <- as.data.frame(pca$x) %>%
+pca_df_before <- as.data.frame(pca$x) %>%
   mutate(sample = rownames(.))
-pca_df
+pca_df_before
 ```
 
 ## Inspect data
@@ -224,7 +229,7 @@ pca_df
 ```{r}
 
 # Combine PCA coordinates with metadata
-pca_metadata_df <- cbind(pca_df, metadata_filt)
+pca_metadata_df <- cbind(pca_df_before, metadata_filt)
 
 # pca gender
 p1 <- ggplot(pca_metadata_df, aes(x = PC1, y = PC2, color = gender)) +
@@ -262,10 +267,10 @@ p4 <- ggplot(pca_metadata_df, aes(x = PC1, y = PC2, color = age)) +
 ```{r}
 
 #Save raw data
-#save(metadata, counts, file = "RData/input_raw.RData")
+save(metadata, counts, file = "RData/input_raw.RData")
 
 #SAVE DATA load for dds 
-#save(metadata_filt, count_matrix, file = "RData/input_for_DGE_all.RData")
+save(metadata_filt, count_matrix, file = "RData/input_for_DGE_all.RData")
 #load("RData/input_for_DGE_all.RData")
 ```
 
@@ -285,9 +290,11 @@ dds <- DESeq(dds)
 
 ```{r}
 #Checkpoint
-#save(dds, file="RData/dds_all.Rdata")
-#load("RData/dds_all.Rdata")
+save(dds, file="RData/dds_all.Rdata")
+#dds<-load("RData/dds_all.Rdata")
 ```
+
+![]()
 
 ```{r}
 #Set pval and logfc
@@ -296,7 +303,7 @@ logfc=1
 ```
 
 ```{r}
-#Normalize
+#Normalize data
 norm_counts <- DESeq2::counts(dds, normalized = T)
 
 # Get result
@@ -311,12 +318,9 @@ dge_res_df <-drop_na(dge_res_df)
 # Add a column to the data frame to specify if they are UP- or DOWN- regulated (log2fc respectively positive or negative)
 dge_res_df$diffexpressed <- "NO"
 
-# if log2Foldchange > 0.6 and pvalue < 0.05, set as "UP"
+# Clasify gene using treshold
 dge_res_df$diffexpressed[dge_res_df$log2FoldChange > logfc & dge_res_df$pval < pval] <- "UP"
-
-# if log2Foldchange < -0.6 and pvalue < 0.05, set as "DOWN"
-dge_res_df$diffexpressed[dge_res_df$log2FoldChange < -logfc & dge_res_df$pval < pval] <- "DOWN"# Explore a bit
-
+dge_res_df$diffexpressed[dge_res_df$log2FoldChange < -logfc & dge_res_df$pval < pval] <- "DOWN"
 
 #Filter down genes
 overexpressed_genes <- subset(dge_res_df, diffexpressed!="NO")  
@@ -331,6 +335,7 @@ plotDispEsts(dds)
 ## Volcano Plot
 
 ```{r}
+#| label: VOlcano plot
 ggplot(data = dge_res_df, aes(x = log2FoldChange, y = -log10(padj), col = diffexpressed)) +
   geom_vline(xintercept = c(-logfc,logfc), col = "gray", linetype = 'dashed') +
   geom_hline(yintercept = -log10(pval), col = "gray", linetype = 'dashed') + 
@@ -342,9 +347,10 @@ ggplot(data = dge_res_df, aes(x = log2FoldChange, y = -log10(padj), col = diffex
        x = expression("log"[2]*"FC"), 
        y = expression("-log"[10]*"p-adj")) + 
   scale_x_continuous(breaks = seq(-10, 10, 2)) +
-  ggtitle('DGE b') 
+  ggtitle('DGE bet') 
  
 ```
+
 
 # PCA
 
@@ -362,6 +368,7 @@ pca_plot
 ```
 
 ```{r}
+#| label: PCA_1
 # Combine PCA coordinates with metadata
 pca_metadata_df <- cbind(pca_plot, metadata_filt)
 
@@ -395,12 +402,14 @@ p4 <- ggplot(pca_metadata_df, aes(x = PC1, y = PC2, color = age)) +
 (p1 | p2) / (p3 | p4)
 ```
 
+![]()
+
 # Gene function
+
 ```{r}
 library(msigdbr)
+library(clusterProfiler)
 ```
-
-
 
 ```{r}
 dge_res_df <- read.csv("data/dge_res_df.csv", row.names = 1)
@@ -423,13 +432,13 @@ deg_results_list <- split(df_sig, df_sig$diffexpressed)
 ```
 
 ```{r}
-background_genes <- data_normalized %>% select(Geneid)
-rm(backgroud_genes)
+background_genes <- data_normalized %>% dplyr::select(Geneid)
 ```
 
 ```{r}
 ## Run ClusterProfiler
 # Settings
+
 name_of_comparison <- 'severevshealthy'
 padj_cutoff <- 0.05
 genecount_cutoff <- 5
@@ -462,12 +471,16 @@ head(res_df)
 ```{r}
 write.csv(res_df, "results.csv")
 ```
+
+Differential expression analysis revealed that the upregulated gene set was dominated by non-coding transcripts, including long non-coding RNAs (lncRNAs), Y RNAs, and several transcribed pseudogenes (e.g. PRKY, ANOS2P, TXLNGY). Most of these transcripts are poorly characterized and lack evidence for protein-coding potential or involvement in known biological pathways. In contrast, the downregulated genes included protein-coding genes associated with cytoskeletal organization (MAP7D2), regulation of protein phosphatase activity (PPP1R2C), and cell cycle–related processes such as mitotic spindle control and chromatid segregation (ERCC6L). Additionally, two key long non-coding RNAs involved in X-chromosome inactivation, TSIX and XIST, were significantly downregulated.
+
 # Multiomics clustering SUMO
 
 ```{r}
 imune_marker_raw=read.csv("data/immune_marker_data.tsv", sep = "\t")
 imune_marker_raw
 ```
+
 ```{r}
 #Filter out not use sample
 imune_marker<- imune_marker_raw %>% filter(analysis_type=="initial") %>% slice (1:262)
@@ -477,83 +490,10 @@ rownames(imune_marker) <- imune_marker$ID
 
 #Save to file
 to_save <- imune_marker %>% dplyr::select(!c(age, sex, BMI, status, analysis_type, batch_variable))
-write_tsv(to_save, file = "data/sumo/immune_markers.tsv")
+write_tsv(to_save, file = "sumo/immune_markers.tsv")
 
 imune_marker_numeric <- imune_marker %>% dplyr::select(!c(ID, age, sex, BMI, status, analysis_type, batch_variable))
 imune_marker_numeric
-```
-
-```{r}
-sum(is.na(to_PCA))
-sapply(to_PCA, class)
-ggpairs(to_PCA)
-
-```
-
-
-
-```{r}
-
-#Run PCA
-to_PCA_clean <- na.omit(to_PCA)
-pca <- prcomp(to_PCA_clean, scale. = TRUE)
-
-
-#Transform to dataframe
-#Tu się coś wykrzacza ale wystarzy pujśc dalej i działa xd
-pca_plot <- as.data.frame(pca$x) 
-pca_plot
-```
-
-
-
-
-
-```{r}
-# Combine PCA coordinates with metadata
-pca_metadata_df <- cbind(pca_plot, metadata_filt)
-
-# pca gender
-p1 <- ggplot(pca_metadata_df, aes(x = PC1, y = PC2, color = gender)) +
-  geom_point(size = 3, alpha = 0.8) +
-  labs(title = "Gender", color = "Gender") +
-  theme_minimal(base_size = 12)
-
-#pca affect
-p2 <- ggplot(pca_metadata_df, aes(x = PC1, y = PC2, color = affected)) +
-  geom_point(size = 3, alpha = 0.8) +
-  labs(title = "Affected", color = "Affected") +
-  theme_minimal(base_size = 12)
-
-#pca bmi)
-p3 <- ggplot(pca_metadata_df, aes(x = PC1, y = PC2, color = bmi)) +
-  geom_point(size = 3, alpha = 0.8) +
-  scale_color_gradient(low = "lightblue", high = "darkblue") +
-  labs(title = "BMI", color = "BMI") +
-  theme_minimal(base_size = 12)
-
-# pca age
-p4 <- ggplot(pca_metadata_df, aes(x = PC1, y = PC2, color = age)) +
-  geom_point(size = 3, alpha = 0.8) +
-  scale_color_gradient(low = "lightgreen", high = "darkgreen") +
-  labs(title = "Age", color = "Age") +
-  theme_minimal(base_size = 12)
-
-# Combine 4 plots into 2x2 grid
-(p1 | p2) / (p3 | p4)
-```
-```{bash}
-ls data/sumo
-```
-
-
-```{r}
-results <- lapply(imune_marker_numeric, shapiro.test)
-results
-```
-
-```{r}
-sum(is.na(imune_marker_numeric))
 ```
 
 ## Normalize data
@@ -561,7 +501,6 @@ sum(is.na(imune_marker_numeric))
 ```{r}
 #Prepare data for sumo
 #Handle missing values, fill NA with mean()
-
 df_imput <- (
   apply(imune_marker_numeric, 1, function(x) {
     x[is.na(x)] <- mean(x, na.rm = TRUE)
@@ -587,9 +526,11 @@ write.table(
   quote = FALSE,
   col.names = NA
 )
-
+t
 ```
+
 ### DGE data
+
 ```{r}
 vsd <- vst(dds, blind = TRUE)
 expr <- assay(vsd)
@@ -612,6 +553,7 @@ write.table(
 ```
 
 ### Metadata
+
 ```{r}
 #Create labels.tsv We need becouse of sumo evaluate
 label_affected <- metadata_filt %>%
@@ -637,57 +579,53 @@ label_gender <- metadata_filt %>%
 label_affected
 label_gender
 
-write_tsv(label, "sumo/labels_affected.tsv")
-write_tsv(label, "sumo/labels_gender.tsv")
+write_tsv(label_affected, "sumo/labels_affected.tsv")
+write_tsv(label_gender, "sumo/labels_gender.tsv")
 ```
-
-
 
 ## Run SUMO
-```{bash}
-source /home/janek/miniconda3/bin/activate #required by Quarto to recognize conda's commands
-conda activate SUMO
-cd sumo
-sumo prepare -atol 0.1 -plot LAML.png immune_markers.tsv,sumo_rnaseq.tsv output.npz 
-cd ..
-conda deactivate #deactivate the environment
-```
-```{bash}
-source /home/janek/miniconda3/bin/activate #required by Quarto to recognize conda's commands
-conda activate SUMO
-cd sumo
-
-sumo run output.npz 2,4 LAML
-
-cd ..
-conda deactivate #deactivate the environment
-```
-
-
 
 ```{bash}
-source /home/janek/miniconda3/bin/activate #required by Quarto to recognize conda's commands
-conda activate SUMO
-cd sumo
-
-sumo run output.npz 2,7 LAML -rep 10 -r 4 
-
-cd ..
-conda deactivate #deactivate the environment
+#source /home/janek/miniconda3/bin/activate #required by Quarto to recognize conda's commands
+#conda activate SUMO
+#cd sumo
+#sumo prepare -atol 0.1 -plot LAML.png immune_markers.tsv,sumo_rnaseq.tsv output.npz 
+#cd ..
+#conda deactivate #deactivate the environment
 ```
-
-
 
 ```{bash}
-source /home/janek/miniconda3/bin/activate #required by Quarto to recognize conda's commands
-conda activate SUMO
-cd sumo
-sumo evaluate LAML/k7/clusters.tsv labels_affected.tsv
-cd ..
+#source /home/janek/miniconda3/bin/activate #required by Quarto to recognize conda's commands
+#conda activate SUMO
+#cd sumo
+
+#sumo run output.npz 2,4 LAML
+
+#cd ..
+#conda deactivate #deactivate the environment
+```
+
+```{bash}
+#source /home/janek/miniconda3/bin/activate #required by Quarto to recognize conda's commands
+#conda activate SUMO
+#cd sumo
+
+#sumo run output.npz 2,7 LAML -rep 10 -r 4 
+
+#cd ..
+#conda deactivate #deactivate the environment
+```
+
+```{bash}
+#source /home/janek/miniconda3/bin/activate #required by Quarto to recognize conda's commands
+#conda activate SUMO
+#cd sumo
+#sumo evaluate LAML/k2/clusters.tsv labels_affected.tsv
+#cd ..
 conda deactivate #deactivate the environment
 ```
-How to inerprate?
-NMI (Normalized Mutual Information): 
+
+How to inerprate? NMI (Normalized Mutual Information):
 
 ## Anylise SUMO output
 
@@ -701,10 +639,12 @@ rownames(clusters)<-clusters$sample
 df <- merge(clusters, metadata_filt, by='row.names')
 head(df)
 ```
+
 ```{r}
 table(df$label, df$affected)
 
 ```
+
 ```{r}
 prop.table(table(df$label, df$affected), 1)
 
@@ -723,4 +663,16 @@ ggplot(df, aes(x=factor(label), fill=factor(affected))) +
   theme_minimal()
 
 ```
+
+# Save data for raport
+```{r}
+saveRDS(dds, "RData/dds.rds")
+saveRDS(metadata_filt, "RData/metadata_filt.rds")
+saveRDS(norm_counts, "RData/norm_counts.rds")
+saveRDS(pca_df_before, "RData/pca_df_before.rds")
+saveRDS(pca_plot, "RData/pca_plot.rds")
+
+```
+
+
 
