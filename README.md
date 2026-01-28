@@ -59,6 +59,11 @@ Figure 3. Volcano plot showing differential gene expression between affected and
 
 The volcano plot summarizes the results of differential gene expression analysis comparing affected and control samples. Each point represents a gene, plotted by log2 fold change (log2FC) on the x-axis and statistical significance expressed as −log10(adjusted p-value) on the y-axis. Genes passing the significance thresholds (|log2FC| > 1 and adjusted p-value < 0.01) are highlighted, with upregulated genes shown in red and downregulated genes in blue, while non-significant genes are shown in grey. This visualization highlights a subset of genes exhibiting strong and statistically significant expression changes between the two groups.
 
+<img width="528" height="363" alt="Screenshot 2026-01-28 at 21 39 51" src="https://github.com/user-attachments/assets/dd220897-49ff-4b2c-abcd-8e06f189fab1" />
+Figure 4. Proportion of affected and control samples across clusters identified by unsupervised clustering??????
+
+The bar plot shows the proportion of affected and control samples within each cluster identified by unsupervised clustering. Both clusters are dominated by affected samples, with only a small proportion of control samples present in each cluster. While slight differences in the relative contribution of control samples between clusters can be observed, no cluster is exclusively associated with either affected or control status.?????????????
+
 
 
 ## Key observations --> PLEASE UPDATE
