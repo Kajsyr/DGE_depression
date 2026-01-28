@@ -45,28 +45,48 @@ The following methods were used in the analysis:
 
 ## Figures 
 <img width="590" height="450" alt="Screenshot 2026-01-28 at 21 38 59" src="https://github.com/user-attachments/assets/4706e4aa-082d-4ccf-93de-7288f05a8b68" />
+
 Figure 1. Sex distribution across affected and control groups
 
 The figure presents the number of female and male samples in the affected and control groups. The affected group contains a substantially higher number of samples than the control group, with females being overrepresented in both groups. This unequal group size and sex distribution were considered during interpretation of downstream analyses.
 
 <img width="590" height="434" alt="Screenshot 2026-01-28 at 21 39 07" src="https://github.com/user-attachments/assets/7e984992-2fef-40d8-9511-e69cd65f07fd" />
+
 Figure 2. PCA of gene expression data with samples colored by gender, affected status, BMI, and age
 
 Principal component analysis (PCA) was performed on normalized gene expression data to assess global sources of variation across samples. Samples were colored according to gender, affected status, body mass index (BMI), and age. No clear separation of samples was observed along the first two principal components with respect to any of the examined variables, indicating that the main axes of transcriptomic variation are not driven by these demographic or clinical factors.
 
 <img width="528" height="434" alt="Screenshot 2026-01-28 at 21 39 34" src="https://github.com/user-attachments/assets/7aa33800-4a3c-4798-99a5-14d86508b583" />
+
 Figure 3. Volcano plot showing differential gene expression between affected and control samples
 
 The volcano plot summarizes the results of differential gene expression analysis comparing affected and control samples. Each point represents a gene, plotted by log2 fold change (log2FC) on the x-axis and statistical significance expressed as −log10(adjusted p-value) on the y-axis. Genes passing the significance thresholds (|log2FC| > 1 and adjusted p-value < 0.01) are highlighted, with upregulated genes shown in red and downregulated genes in blue, while non-significant genes are shown in grey. This visualization highlights a subset of genes exhibiting strong and statistically significant expression changes between the two groups.
 
 <img width="528" height="363" alt="Screenshot 2026-01-28 at 21 39 51" src="https://github.com/user-attachments/assets/dd220897-49ff-4b2c-abcd-8e06f189fab1" />
+
 Figure 4. Proportion of affected and control samples across clusters identified by unsupervised clustering??????
 
 The bar plot shows the proportion of affected and control samples within each cluster identified by unsupervised clustering. Both clusters are dominated by affected samples, with only a small proportion of control samples present in each cluster. While slight differences in the relative contribution of control samples between clusters can be observed, no cluster is exclusively associated with either affected or control status.?????????????
 
+<img width="1344" height="960" alt="621071802_3104116599788698_3732104398971349286_n" src="https://github.com/user-attachments/assets/d418c3d3-2d1e-42e1-8b4c-0018a4ecb904" />
 
+Figure 5. PCA of normalized gene expression data with samples colored by gender, affected status, BMI, and age
 
-## Key observations --> PLEASE UPDATE
+Principal component analysis (PCA) was performed on normalized gene expression data to assess global sources of variation across samples. Samples were colored according to gender, affected status, body mass index (BMI), and age. No clear separation of samples was observed along the first two principal components with respect to any of the examined variables, indicating that the main axes of transcriptomic variation are not driven by these demographic or clinical factors.
+
+<img width="1344" height="960" alt="619960021_942029334862976_5741874887499253879_n" src="https://github.com/user-attachments/assets/98033ab0-9987-43f2-92d2-66272b264dac" />
+
+Figure 6. Dispersion estimates as a function of mean normalized counts, showing gene-wise estimates, fitted trend, and final shrunk dispersions used by DESeq2.
+
+The plot shows the relationship between gene-wise dispersion estimates and the mean of normalized counts as estimated by DESeq2. Black points represent raw gene-wise dispersion estimates, the red line indicates the fitted dispersion trend, and blue points show the final dispersion estimates after empirical Bayes shrinkage. As expected, dispersion decreases with increasing mean expression, and shrinkage stabilizes dispersion estimates for lowly expressed genes. These final dispersion estimates were used in downstream differential expression analysis.
+
+<img width="1344" height="960" alt="624831943_867901589370304_4639917354214700540_n" src="https://github.com/user-attachments/assets/169e2fcc-7a07-4b6a-8582-0b1e16494e0e" />
+
+Figure 7. Distribution of BMI and age across the study cohort.
+
+The histograms show the distribution of body mass index (BMI) and age across all samples included in the analysis. BMI values are concentrated in the range typical for adult populations, with a right-skewed distribution and a small number of higher values. Age shows a broader distribution, spanning young to older adults, reflecting the heterogeneity of the study cohort. These variables were considered as potential covariates in downstream analyses.
+
+## Key observations 
 - PCA does not reveal clear separation between diagnostic groups.
 - The observed variation likely reflects immune cell composition and immune activation.
 - These findings are consistent with the original study, where immune-related subgroups emerged only after multi-omics integration.
