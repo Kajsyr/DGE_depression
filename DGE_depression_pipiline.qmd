@@ -10,7 +10,7 @@ affiliations:
   - id: JU
     name: Jagiellonian University
 format: 
-  pdf:
+  html:
     documentclass: article
     toc: true
     toc-depth: 3
@@ -21,16 +21,14 @@ format:
     fig-height: 4
     fig-cap: true
     keep-md: false
-    include-in-header: ""      # <- pusty string zamiast null
-    template: ""               # <- pusty string zamiast null
+    include-in-header: ""      
+    template: ""               
     latex-engine: xelatex
 editor: visual
 execute:
   cache: true
   eval: false
 ---
-
-
 
 ```{r}
 #Load Packages
@@ -294,7 +292,6 @@ save(dds, file="RData/dds_all.Rdata")
 #dds<-load("RData/dds_all.Rdata")
 ```
 
-![]()
 
 ```{r}
 #Set pval and logfc
@@ -332,7 +329,7 @@ dge_res_df
 plotDispEsts(dds)
 ```
 
-## Volcano Plot
+# Volcano Plot
 
 ```{r}
 #| label: VOlcano plot
@@ -350,7 +347,6 @@ ggplot(data = dge_res_df, aes(x = log2FoldChange, y = -log10(padj), col = diffex
   ggtitle('DGE bet') 
  
 ```
-
 
 # PCA
 
@@ -402,7 +398,6 @@ p4 <- ggplot(pca_metadata_df, aes(x = PC1, y = PC2, color = age)) +
 (p1 | p2) / (p3 | p4)
 ```
 
-![]()
 
 # Gene function
 
@@ -586,46 +581,44 @@ write_tsv(label_gender, "sumo/labels_gender.tsv")
 ## Run SUMO
 
 ```{bash}
-#source /home/janek/miniconda3/bin/activate #required by Quarto to recognize conda's commands
-#conda activate SUMO
-#cd sumo
-#sumo prepare -atol 0.1 -plot LAML.png immune_markers.tsv,sumo_rnaseq.tsv output.npz 
-#cd ..
-#conda deactivate #deactivate the environment
-```
-
-```{bash}
-#source /home/janek/miniconda3/bin/activate #required by Quarto to recognize conda's commands
-#conda activate SUMO
-#cd sumo
-
-#sumo run output.npz 2,4 LAML
-
-#cd ..
-#conda deactivate #deactivate the environment
-```
-
-```{bash}
-#source /home/janek/miniconda3/bin/activate #required by Quarto to recognize conda's commands
-#conda activate SUMO
-#cd sumo
-
-#sumo run output.npz 2,7 LAML -rep 10 -r 4 
-
-#cd ..
-#conda deactivate #deactivate the environment
-```
-
-```{bash}
-#source /home/janek/miniconda3/bin/activate #required by Quarto to recognize conda's commands
-#conda activate SUMO
-#cd sumo
-#sumo evaluate LAML/k2/clusters.tsv labels_affected.tsv
-#cd ..
+source /home/janek/miniconda3/bin/activate #required by Quarto to recognize conda's commands
+conda activate SUMO
+cd sumo
+sumo prepare -atol 0.1 -plot LAML.png immune_markers.tsv,sumo_rnaseq.tsv output.npz 
+cd ..
 conda deactivate #deactivate the environment
 ```
 
-How to inerprate? NMI (Normalized Mutual Information):
+```{bash}
+source /home/janek/miniconda3/bin/activate #required by Quarto to recognize conda's commands
+conda activate SUMO
+cd sumo
+
+sumo run output.npz 2,4 LAML
+
+cd ..
+#conda deactivate #deactivate the environment
+```
+
+```{bash}
+source /home/janek/miniconda3/bin/activate #required by Quarto to recognize conda's commands
+conda activate SUMO
+cd sumo
+
+sumo run output.npz 2,7 LAML -rep 10 -r 4 
+
+cd ..
+conda deactivate #deactivate the environment
+```
+
+```{bash}
+source /home/janek/miniconda3/bin/activate #required by Quarto to recognize conda's commands
+conda activate SUMO
+cd sumo
+sumo evaluate LAML/k2/clusters.tsv labels_affected.tsv
+cd ..
+conda deactivate #deactivate the environment
+```
 
 ## Anylise SUMO output
 
@@ -665,6 +658,7 @@ ggplot(df, aes(x=factor(label), fill=factor(affected))) +
 ```
 
 # Save data for raport
+
 ```{r}
 saveRDS(dds, "RData/dds.rds")
 saveRDS(metadata_filt, "RData/metadata_filt.rds")
@@ -673,6 +667,3 @@ saveRDS(pca_df_before, "RData/pca_df_before.rds")
 saveRDS(pca_plot, "RData/pca_plot.rds")
 
 ```
-
-
-
