@@ -29,16 +29,16 @@ In contrast, the downregulated genes included protein-coding genes associated wi
 
 ## Analysis goals
 The main objectives of this project are:
-- to explore global transcriptomic variability in PBMC RNA-seq data,
-- to investigate immune-related heterogeneity using dimensionality reduction methods,
-- to identify gradual transcriptomic patterns rather than discrete clusters.
+- explore transcriptomic variability in PBMC RNA-seq data from people with depression
+- conect DGE RNA-seq results with depression
+- to investigate link betwen immune markers and trasncriptonic data
 
-## Methods
-The following methods were used in the analysis:
+## Methods and materials
+The following methods and materials were used in the analysis:
 - data preprocessing and normalization (preprocessed data provided by the authors),
-- Principal Component Analysis (PCA),
-- analysis of PCA loadings to identify genes driving transcriptomic variation,
-- construction of gene expression signatures based on top PCA loadings.
+- Principal Component Analysis (PCA)
+- DGE by DEseq2
+- SUMO clustering to integrate multi-omics data
 - gene set annotation: immunologic gene sets (MSigDB category C7) were retrieved using the msigdbr package; gene sets were restricted to Homo sapiens and mapped using Ensembl gene IDs.
 - background gene universe: a background gene list was defined from normalized RNA-seq expression data (GSE260603_normalized_data.tsv).
 - enrichment analysis: over-representation analysis was performed using clusterProfiler::enricher(); upregulated and downregulated gene sets were analyzed independently.
@@ -95,6 +95,7 @@ The bar plot shows the proportion of affected and control samples within each cl
 ## Key observations 
 - PCA does not reveal clear separation between diagnostic groups.
 - The observed variation likely reflects immune cell composition and immune activation.
+- RNA-seq and immune markers data are not enought to cluster data 
 - These findings are consistent with the original study, where immune-related subgroups emerged only after multi-omics integration.
 - Upregulated genes were predominantly non-coding transcripts, including lncRNAs, Y RNAs, and transcribed pseudogenes, most of which lack functional annotation in known immune pathways. This suggests that disease-associated transcriptional activation may involve regulatory or poorly characterized RNA mechanisms rather than classical protein-coding immune responses.
 - Downregulated genes included protein-coding genes involved in cytoskeletal organization, phosphatase regulation, and cell cycle–related processes.
@@ -117,9 +118,10 @@ The bar plot shows the proportion of affected and control samples within each cl
 - Ihor Mokrytskyi  
 - Maya Śliwa
 
-## AI Usage Disclaimer
+## Acknowledgements
 
-Parts of this project were reviewed and assisted by artificial intelligence (AI) tools (e.g., large language models) to support code verification, debugging, and clarity.
+The authors acknowledge the use of artificial intelligence (AI) tools to assist with code review, debugging, and clarity improvements, as well as for translation between Polish and English. 
+
 
 ## Bibliography
 Abbafati, C., Abbas, K. M., Abbasi, M., Abbasifard, M., Abbasi-
