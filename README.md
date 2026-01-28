@@ -33,7 +33,7 @@ The main objectives of this project are:
 - to investigate immune-related heterogeneity using dimensionality reduction methods,
 - to identify gradual transcriptomic patterns rather than discrete clusters.
 
-## Methods --> PLEASE UPDATE
+## Methods
 The following methods were used in the analysis:
 - data preprocessing and normalization (preprocessed data provided by the authors),
 - Principal Component Analysis (PCA),
