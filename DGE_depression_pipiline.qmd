@@ -219,9 +219,9 @@ pca <- prcomp(t(expr), center = TRUE, scale. = TRUE)
 
 ```{r}
 # data frame
-pca_df <- as.data.frame(pca$x) %>%
+pca_df_before <- as.data.frame(pca$x) %>%
   mutate(sample = rownames(.))
-pca_df
+pca_df_before
 ```
 
 ## Inspect data
@@ -229,7 +229,7 @@ pca_df
 ```{r}
 
 # Combine PCA coordinates with metadata
-pca_metadata_df <- cbind(pca_df, metadata_filt)
+pca_metadata_df <- cbind(pca_df_before, metadata_filt)
 
 # pca gender
 p1 <- ggplot(pca_metadata_df, aes(x = PC1, y = PC2, color = gender)) +
@@ -669,6 +669,7 @@ ggplot(df, aes(x=factor(label), fill=factor(affected))) +
 saveRDS(dds, "RData/dds.rds")
 saveRDS(metadata_filt, "RData/metadata_filt.rds")
 saveRDS(norm_counts, "RData/norm_counts.rds")
+saveRDS(pca_df_before, "RData/pca_df_before.rds")
 saveRDS(pca_plot, "RData/pca_plot.rds")
 
 ```
