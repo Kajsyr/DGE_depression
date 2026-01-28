@@ -117,6 +117,10 @@ The bar plot shows the proportion of affected and control samples within each cl
 - Ihor Mokrytskyi  
 - Maya Śliwa
 
+## AI Usage Disclaimer
+
+Parts of this project were reviewed and assisted by artificial intelligence (AI) tools (e.g., large language models) to support code verification, debugging, and clarity.
+
 ## Bibliography
 Abbafati, C., Abbas, K. M., Abbasi, M., Abbasifard, M., Abbasi-
 Kangevari, M., Abbastabar, H., Abd-Allah, F., Abdelalim, A., Abdollahi,
