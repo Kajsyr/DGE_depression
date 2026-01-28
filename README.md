@@ -43,6 +43,12 @@ The following methods were used in the analysis:
 - background gene universe: a background gene list was defined from normalized RNA-seq expression data (GSE260603_normalized_data.tsv).
 - enrichment analysis: over-representation analysis was performed using clusterProfiler::enricher(); upregulated and downregulated gene sets were analyzed independently.
 
+## Figures 
+<img width="590" height="450" alt="Screenshot 2026-01-28 at 21 38 59" src="https://github.com/user-attachments/assets/4706e4aa-082d-4ccf-93de-7288f05a8b68" />
+Figure 1. Sex distribution across affected and control groups
+
+The figure presents the number of female and male samples in the affected and control groups. The affected group contains a substantially higher number of samples than the control group, with females being overrepresented in both groups. This unequal group size and sex distribution were considered during interpretation of downstream analyses.
+
 ## Key observations --> PLEASE UPDATE
 - PCA does not reveal clear separation between diagnostic groups.
 - The observed variation likely reflects immune cell composition and immune activation.
